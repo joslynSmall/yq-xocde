@@ -16,6 +16,7 @@ import com.yq.xcode.security.service.PrincipalService;
 import com.yq.xcode.security.service.ResourceService;
 import com.yq.xcode.security.service.RoleService;
 import com.yq.xcode.security.service.SecurityIdService;
+import com.yq.xcode.security.utils.YqSecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -41,11 +42,17 @@ public class PrincipalServiceImpl extends YqJpaDataAccessObject implements Princ
 
     @Override
     public Page<SecPrincipal> findPrincipalPage(PrincipalCriteria criteria) {
+
+        String organizationId = YqSecurityUtils.getLoginUser().getOrganizationId();
         StringBuffer query = new StringBuffer();
         query.append("SELECT ")
                 .append(JPAUtils.genEntityCols(SecPrincipal.class, "a", null))
                 .append(" FROM sec_principal a")
-                .append(" WHERE 1=1 ");
+                .append(" WHERE 1=1 ")
+                .append(" AND a.is_active = 1 ");
+        if (CommonUtil.isNull(criteria.getEnterpriseId())){
+            query.append(" AND a.organization_id = ").append(organizationId);
+        }
         Page<SecPrincipal> page =
                 sqlToModelService.executeNativeQueryForPage(query.toString(),
                         "a.name", null, criteria, SecPrincipal.class);
