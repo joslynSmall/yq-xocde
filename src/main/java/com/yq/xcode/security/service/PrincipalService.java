@@ -49,7 +49,7 @@ public interface PrincipalService {
 	 * 保存角色信息
 	 * @param beanList  
 	 */
-	public void saveRoleAssignmentBean(List<RoleAssignmentBean> beanList);
+	public void saveRoleAssignmentBean(List<RoleAssignmentBean> beanList, Long principalId);
 	/**
 	 * 根据用户获取资源
 	 * @param resourceName  
@@ -69,7 +69,7 @@ public interface PrincipalService {
 	 * @param resourceName
 	 * @param beanList  目前暂时只支持流程角色
 	 */
-	public void saveResourceAssignmentBean(String resourceName,List<ResourceAssignmentBean> beanList);
+	public void saveResourceAssignmentBean(String resourceName,List<ResourceAssignmentBean> beanList, Long principalId);
 
 	public void savePrincipal(SecPrincipal principal, String password);
 

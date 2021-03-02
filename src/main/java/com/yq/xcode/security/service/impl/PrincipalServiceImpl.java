@@ -12,6 +12,7 @@ import com.yq.xcode.security.bean.ResourceAssignmentBean;
 import com.yq.xcode.security.bean.RoleAssignmentBean;
 import com.yq.xcode.security.criteria.PrincipalCriteria;
 import com.yq.xcode.security.entity.*;
+import com.yq.xcode.security.resourceproviders.ResourceConstants;
 import com.yq.xcode.security.service.PrincipalService;
 import com.yq.xcode.security.service.ResourceService;
 import com.yq.xcode.security.service.RoleService;
@@ -255,8 +256,11 @@ public class PrincipalServiceImpl extends YqJpaDataAccessObject implements Princ
     }
 
     @Override
-    public void saveRoleAssignmentBean(List<RoleAssignmentBean> beanList) {
-        if (CommonUtil.isNull(beanList)) {
+    public void saveRoleAssignmentBean(List<RoleAssignmentBean> beanList, Long principalId) {
+
+        if (CommonUtil.isNull(beanList) && CommonUtil.isNotNull(principalId) ) {
+            // 清除现有(权限--角色)关联数据
+            this.clearRoleAssignment(principalId);
             return;
         }
         SecurityId securityId = initGetSecurityId(beanList.get(0).getPrincipalId());
@@ -270,6 +274,20 @@ public class PrincipalServiceImpl extends YqJpaDataAccessObject implements Princ
             roleAssignment.setSidId(securityId.getId());
             this.save(roleAssignment);
         }
+    }
+
+    /**
+     * 清除现有(权限--角色)关联数据
+     * @param principalId 主体信息ID
+     * @return
+     */
+    private Boolean clearRoleAssignment(Long principalId) {
+
+        int execute = em.createNativeQuery("DELETE FROM sec_role_assignment WHERE sid_id IN (SELECT sec.id FROM sec_sid sec WHERE sec.sid =?)")
+                .setParameter(1, principalId).executeUpdate();
+
+        return execute > 0;
+
     }
 
     @Override
@@ -293,8 +311,12 @@ public class PrincipalServiceImpl extends YqJpaDataAccessObject implements Princ
     }
 
     @Override
-    public void saveResourceAssignmentBean(String resourceName, List<ResourceAssignmentBean> beanList) {
+    public void saveResourceAssignmentBean(String resourceName, List<ResourceAssignmentBean> beanList, Long principalId) {
         if (CommonUtil.isNull(beanList)) {
+            if (CommonUtil.isEquals(ResourceConstants.WORK_FLOW_ROLE, resourceName)){
+                // 清除现有审批角色
+                clearResourceAssignment(principalId);
+            }
             return;
         }
         SecurityId securityId = initGetSecurityId(beanList.get(0).getPrincipalId());
@@ -312,6 +334,19 @@ public class PrincipalServiceImpl extends YqJpaDataAccessObject implements Princ
             this.save(resourceAssignment);
         }
 
+    }
+
+    /**
+     * 清除现有审批角色
+     * @param principalId
+     * @return
+     */
+    private Boolean clearResourceAssignment(Long principalId) {
+
+        int execute = em.createNativeQuery("DELETE FROM sec_resource_assignment WHERE sid_id IN (SELECT sec.id FROM sec_sid sec WHERE sec.sid =?)")
+                .setParameter(1, principalId).executeUpdate();
+
+        return execute > 0;
     }
 
 }
