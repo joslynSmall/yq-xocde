@@ -13,7 +13,7 @@ import com.yq.xcode.security.utils.AesEncryptUtils;
 /**
  * 用户token<br>
  * .
- * 
+ *
  * @author wangyancheng <br>
  * @version 1.0.0 2020年4月25日<br>
  *
@@ -21,11 +21,11 @@ import com.yq.xcode.security.utils.AesEncryptUtils;
  */
 @Service
 public class UserAccessTokenServiceImpl implements UserAccessTokenService {
-	
+
 	/**
 	 * token 过期时间.
 	 */
-    private static final long EXPIRE_SECONDS_PC = 7200L;
+    private static final long EXPIRE_SECONDS_PC = 1296000L;
 	/**
 	 * app token 过期时间.设置15天
 	 */
@@ -35,25 +35,25 @@ public class UserAccessTokenServiceImpl implements UserAccessTokenService {
     private RedisUtil redisUtil;
 	/***
 	 * 通過用戶名和密碼生成token.
-	 * @param ticket 
+	 * @param ticket
 	 * @return UserAccessToken
     * @throws Exception 异常
 	 */
 	@Override
 	public UserAccessToken createToken(final UserAccessTicket ticket) throws Exception {
 		if (CommonUtil.isNull(ticket.getUsername())) {
-			throw new Exception("用户名不能为空");	
+			throw new Exception("用户名不能为空");
 		}
 		if (CommonUtil.isNull(ticket.getPassword())) {
-			throw new Exception("密码不能为空");	
+			throw new Exception("密码不能为空");
 		}
 		final UserAccessToken token = genAndSaveToken(ticket);
-		return token;	
-	  
+		return token;
+
 	}
 	/***
 	 * 产生随机字符串.
-	 * @param length 
+	 * @param length
 	 * @return String
 	 */
 	private  String getRandomString(final int length) {
@@ -68,12 +68,12 @@ public class UserAccessTokenServiceImpl implements UserAccessTokenService {
 	 }
 	/***
 	 * 生成和保存token.
-	 * @param ticket 
+	 * @param ticket
 	 * @return UserAccessToken
-	 * @throws Exception 
+	 * @throws Exception
 	 */
     private UserAccessToken genAndSaveToken(final UserAccessTicket ticket) throws Exception {
-    	final UserAccessToken userToken  = new UserAccessToken();   
+    	final UserAccessToken userToken  = new UserAccessToken();
     	userToken.setId(ticket.getUsername());
     	userToken.setNonce(ticket.getNonce());
     	final int secondStep = 1000;
@@ -102,11 +102,11 @@ public class UserAccessTokenServiceImpl implements UserAccessTokenService {
     	}
     	redisUtil.put(YqTokenConstant.USER_ACCESS_TOKEN, token, ticket);
     	return userToken;
-    	
+
     }
 	/***
 	 * 通過用戶名和密碼生成token.
-	 * @param ticket 
+	 * @param ticket
 	 * @return UserAccessToken
 	 * @throws Exception 异常
 	 */
@@ -125,7 +125,7 @@ public class UserAccessTokenServiceImpl implements UserAccessTokenService {
 		//目前直接从redis获取，如果涉及到加密解密，在此方法实现
 		return 	redisUtil.get(YqTokenConstant.USER_ACCESS_TOKEN, token);
 	}
-	
+
 	/***
 	 * removeToken.
 	 * @param token 移除token对象
@@ -134,5 +134,5 @@ public class UserAccessTokenServiceImpl implements UserAccessTokenService {
 	public void removeToken(final String token) {
 		redisUtil.remove(YqTokenConstant.USER_ACCESS_TOKEN, token);
 	}
-	
+
 }
